@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"errors"
 )
 
 const IMTPower = 2
@@ -17,9 +18,12 @@ func getUserInput() (float64, float64) {
 	return userKg, userHeight
 }
 
-func calculateIMT(userKg float64, userHeight float64) float64 {
+func calculateIMT(userKg float64, userHeight float64) (float64, error) {
+	if userHeight <= 0 || userKg <= 0 {
+		return 0, errors.New("NO_PARAMS_ERROR")
+	}
 	IMT := userKg / math.Pow(userHeight/100, IMTPower)
-	return IMT
+	return IMT, nil
 }
 func outputResult(imt float64) {
 	result := fmt.Sprintf("Ваш индекс массы тела: %.0f", imt)
@@ -38,8 +42,30 @@ func outputResult(imt float64) {
 	}
 }
 
+func checkRepeatCalculation() bool {
+	var userChoice string
+	fmt.Print("Вы хотите сделать еще расчет (y/n):")
+	fmt.Scan(&userChoice)
+	if userChoice == "y" || userChoice == "Y" {
+		return true
+	}
+	return false
+}
+
 func main() {
-	userHeight, userKg := getUserInput()
-	IMT := calculateIMT(userHeight, userKg)
-	outputResult(IMT)
+	fmt.Println("__ Калькулятор индекса массы тела __")
+	for {
+		userHeight, userKg := getUserInput()
+		IMT, err := calculateIMT(userHeight, userKg)
+		if err != nil {
+			fmt.Println("Не заданы параметры для расчёта")
+			continue
+		}
+		outputResult(IMT)
+		isRepeatCalculation := checkRepeatCalculation()
+		if !isRepeatCalculation {
+			break
+		}
+
+	}
 }
